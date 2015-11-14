@@ -1,6 +1,7 @@
 package com.devazt.carrito;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -14,6 +15,14 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,12 +32,37 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         onLaunchScanner();
-
-        /* Launch de camera */
+        /* Launch camera */
         Button btnScanner = (Button) findViewById(R.id.btnScanner);
         btnScanner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Retrofit retrofit = new Retrofit.Builder()
+                                .baseUrl("http://10.49.86.154:8080")
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build();
+
+                        IProduct iProduct = retrofit.create(IProduct.class);
+                        iProduct.getProductos().enqueue(new Callback<List<Producto>>() {
+                            @Override
+                            public void onResponse(Response<List<Producto>> response, Retrofit retrofit) {
+                                for (Producto product : response.body()) {
+                                    System.out.println(product.getName());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t) {
+                                System.out.println(t.getStackTrace());
+                                Toast.makeText(getBaseContext(), "Fallo " + t.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }).start();
+
                 onLaunchScanner();
             }
         });
