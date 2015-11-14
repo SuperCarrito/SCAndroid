@@ -6,6 +6,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -14,22 +16,44 @@ import com.google.zxing.integration.android.IntentResult;
 
 public class MainActivity extends ActionBarActivity {
 
+    private final String ACTION_SCAN = "com.google.zxing.client.android.SCAN";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
-        IntentIntegrator intent =  new IntentIntegrator(this);
-        intent.initiateScan();
+
+        onLaunchScanner();
+
+        /* Launch de camera */
+        Button btnScanner = (Button) findViewById(R.id.btnScanner);
+        btnScanner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onLaunchScanner();
+            }
+        });
+    }
+
+    private void onLaunchScanner(){
+        try {
+            IntentIntegrator intent = new IntentIntegrator(MainActivity.this);
+            intent.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+            intent.setPrompt("Escanea el codigo de barras");
+            intent.initiateScan();
+        }catch (Exception ex) {
+
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        //retrieve scan result
         IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanningResult != null) {
             // codigo encontrado
-        }else{
-            // no hay codigo
+            String scanContent = scanningResult.getContents();
+            Toast.makeText(this, scanContent, Toast.LENGTH_LONG).show();
+        } else {
+
         }
     }
 
