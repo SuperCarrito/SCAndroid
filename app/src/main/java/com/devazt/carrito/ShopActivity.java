@@ -2,6 +2,7 @@ package com.devazt.carrito;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.PorterDuff;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -16,6 +17,12 @@ import com.google.zxing.integration.android.IntentResult;
 
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 public class ShopActivity extends AppCompatActivity {
 
@@ -52,23 +59,50 @@ public class ShopActivity extends AppCompatActivity {
             IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode,resultCode,intent);
             if (scanningResult != null) {
                 // codigo encontrado
-                String scanContent = scanningResult.getContents();
+                final String scanContent = scanningResult.getContents();
                 if (!scanContent.equals("")) {
                     // imprimimos el codigo de barras
                     System.out.println(scanContent);
                     // lanzamos una peticion al servicio web
                     adapter = null;
-                    shopElements.add(new ShopItem(scanContent, "$5"));
-                    adapter = new ShopItemAdapter(ShopActivity.this, shopElements);
-                    shopListItems.setAdapter(adapter);
-                    adapter.notifyDataSetChanged();
-                    double price = 0;
-                    for (ShopItem item : shopElements){
-                        String cost = item.getPrice().substring(1);
-                        price += Double.parseDouble(cost);
-                    }
-                    TextView tv = (TextView) findViewById(R.id.tvCostoTotal);
-                    tv.setText(String.valueOf(price));
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Retrofit retrofit = new Retrofit.Builder()
+                                    .baseUrl("http://10.49.86.154:8080")
+                                    .addConverterFactory(GsonConverterFactory.create())
+                                    .build();
+
+                            IProduct iProduct = retrofit.create(IProduct.class);
+                            iProduct.getProductos().enqueue(new Callback<List<Producto>>() {
+                                @Override
+                                public void onResponse(Response<List<Producto>> response, Retrofit retrofit) {
+                                    List<Producto> productos = response.body();
+                                    for (Producto product : productos){
+                                        if(product.getBarCode().equals(scanContent)){
+                                            shopElements.add(new ShopItem(product.getBarCode(), String.valueOf(product.getPrice())));
+                                            adapter = new ShopItemAdapter(ShopActivity.this, shopElements);
+                                            shopListItems.setAdapter(adapter);
+                                            adapter.notifyDataSetChanged();
+                                            double price = 0;
+                                            for (ShopItem item : shopElements){
+                                                String cost = item.getPrice();
+                                                price += Double.parseDouble(cost);
+                                            }
+                                            TextView tv = (TextView) findViewById(R.id.tvCostoTotal);
+                                            tv.setText(String.valueOf(price));
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+
+                                }
+                            });
+                        }
+                    }).start();
                 }else{
                     System.out.println("El codigo de barras esta vacio");
                 }

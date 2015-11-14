@@ -30,39 +30,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        // Launch camera
         onLaunchScanner();
         /* Launch camera */
         Button btnScanner = (Button) findViewById(R.id.btnScanner);
         btnScanner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl("http://10.49.86.154:8080")
-                                .addConverterFactory(GsonConverterFactory.create())
-                                .build();
-
-                        IProduct iProduct = retrofit.create(IProduct.class);
-                        iProduct.getProductos().enqueue(new Callback<List<Producto>>() {
-                            @Override
-                            public void onResponse(Response<List<Producto>> response, Retrofit retrofit) {
-                                for (Producto product : response.body()) {
-                                    System.out.println(product.getName());
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Throwable t) {
-                                System.out.println(t.getStackTrace());
-                                Toast.makeText(getBaseContext(), "Fallo " + t.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }).start();
-
                 onLaunchScanner();
             }
         });
