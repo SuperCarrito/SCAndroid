@@ -1,12 +1,15 @@
 package com.devazt.carrito;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -18,6 +21,16 @@ public class MainActivity extends ActionBarActivity {
         this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
         IntentIntegrator intent =  new IntentIntegrator(this);
         intent.initiateScan();
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        //retrieve scan result
+        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanningResult != null) {
+            // codigo encontrado
+        }else{
+            // no hay codigo
+        }
     }
 
     @Override
