@@ -51,7 +51,9 @@ public class MainActivity extends ActionBarActivity {
         if (scanningResult != null) {
             // codigo encontrado
             String scanContent = scanningResult.getContents();
-            Toast.makeText(this, scanContent, Toast.LENGTH_LONG).show();
+            if(!scanContent.equals("")){
+                // iniciamos un activity
+            }
         } else {
 
         }
