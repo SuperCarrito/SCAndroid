@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,9 +15,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 
-public class MainActivity extends ActionBarActivity {
-
-    private final String ACTION_SCAN = "com.google.zxing.client.android.SCAN";
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,23 +38,30 @@ public class MainActivity extends ActionBarActivity {
         try {
             IntentIntegrator intent = new IntentIntegrator(MainActivity.this);
             intent.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
-            intent.setPrompt("Escanea el codigo de barras");
+            intent.setPrompt("Escanea el código QR del carrito");
             intent.initiateScan();
         }catch (Exception ex) {
 
         }
     }
 
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-        if (scanningResult != null) {
-            // codigo encontrado
-            String scanContent = scanningResult.getContents();
-            if(!scanContent.equals("")){
-                // iniciamos un activity
+        if(intent != null){
+            IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+            if (scanningResult != null) {
+                // codigo encontrado
+                String scanContent = scanningResult.getContents();
+                if(!scanContent.equals("")){
+                    // iniciamos un activity
+                    Intent goToActivity = new Intent(MainActivity.this,ShopActivity.class);
+                    startActivity(goToActivity);
+                }
+            } else {
+                System.out.println("No hay data");
             }
-        } else {
-
+        }else{
+            System.out.println("No hay data");
         }
     }
 
