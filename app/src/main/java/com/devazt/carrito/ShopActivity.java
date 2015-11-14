@@ -1,22 +1,38 @@
 package com.devazt.carrito;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.sql.SQLOutput;
+import java.util.ArrayList;
 
 public class ShopActivity extends AppCompatActivity {
+
+    ShopItemAdapter adapter;
+    ArrayList<ShopItem> shopElements;
+    ListView shopListItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shop);
-        onLaunchScanner();
+        shopListItems = (ListView) findViewById(R.id.shopListItems);
+        shopElements = new ArrayList<ShopItem>();
+        adapter = new ShopItemAdapter(ShopActivity.this, shopElements);
+        shopListItems.setAdapter(adapter);
+        //onLaunchScanner();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     private void onLaunchScanner(){
@@ -41,7 +57,18 @@ public class ShopActivity extends AppCompatActivity {
                     // imprimimos el codigo de barras
                     System.out.println(scanContent);
                     // lanzamos una peticion al servicio web
-                    onLaunchScanner();
+                    adapter = null;
+                    shopElements.add(new ShopItem(scanContent, "$5"));
+                    adapter = new ShopItemAdapter(ShopActivity.this, shopElements);
+                    shopListItems.setAdapter(adapter);
+                    adapter.notifyDataSetChanged();
+                    double price = 0;
+                    for (ShopItem item : shopElements){
+                        String cost = item.getPrice().substring(1);
+                        price += Double.parseDouble(cost);
+                    }
+                    TextView tv = (TextView) findViewById(R.id.tvCostoTotal);
+                    tv.setText(String.valueOf(price));
                 }else{
                     System.out.println("El codigo de barras esta vacio");
                 }
@@ -51,5 +78,22 @@ public class ShopActivity extends AppCompatActivity {
         }else{
             System.out.println("No hay data");
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_shop, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_action_add:
+                onLaunchScanner();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

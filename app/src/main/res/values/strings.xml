@@ -5,4 +5,5 @@
     <string name="action_settings">Settings</string>
     <string name="scan_action">Escanear</string>
     <string name="main_connect_text">Conectar con un carrito</string>
+    <string name="shop_action_add">Añadir</string>
 </resources>
